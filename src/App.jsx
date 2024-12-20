@@ -1,0 +1,251 @@
+import React, { useEffect, useState } from 'react';
+import { createRoot } from 'react-dom/client';
+
+const root = createRoot(document.getElementById('root'));
+
+const App = () => {
+
+    const [firstRenderDone, setFirstRenderDone] = useState(false);
+
+    const startingNumber = 1;
+    const numberOfRows = 5;
+    const numberOfColumns = 5;
+    const [chosenNumbersArr, setChosenNumbersArr] = useState([]);
+    const [dataArr, setDataArr] = useState([]);
+    const [reload, setReload] = useState(1);
+    const [bingoCounter, setBingoCounter] = useState(0);
+    const [arrayOfBingoCombinations, setArrayOfBingoCombinations] = useState([]);
+    const [totalNumberOfBingoCombinations, setTotalNumberOfBingoCombinations] = useState(0);
+    
+
+    const styles = {
+        mainDiv: {
+            height: '100vh',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
+        },
+        bingoCounterDiv: {
+            self: {
+                marginRight: '2rem',
+                width: '8rem',
+                display: 'flex',
+                flexDirection: 'column'
+            },
+            bingoCounterNumber: {
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                backgroundColor: '#4c004c',
+                color: 'white',
+                marginBottom: '1rem',
+                height: '10rem',
+                borderRadius: '1rem',
+                // width: '8rem',
+                // marginLeft: 'auto',
+                // marginRight: 'auto'
+                spanElement: {
+                    fontSize: 'x-large'
+                }
+            }
+        },
+        parentDiv: {
+            display: 'grid',
+            gridTemplateColumns: `repeat(${numberOfColumns}, 5rem)`,
+            gridTemplateRows: `repeat(${numberOfRows}, 5rem)`,
+            gap: '2rem 2rem',
+            border: 'solid red 1px',
+            padding: '1rem'
+        },
+        numberDiv: {
+            // height: '2rem',
+            // width: '2rem',
+            // backgroundColor: 'pink',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
+        },
+        buttonElement: {
+            color: 'white',
+            backgroundColor: '#7878cd',
+            border: 'none',
+            padding: '0.5rem',
+            borderRadius: '19px',
+            marginLeft: '86px',
+            cursor: 'pointer'
+        }
+    }
+
+    const createRandomNumberArr = (start, end) => {
+        let numberArr = [];
+        while(numberArr.length < end){
+            const randomNumber = Math.floor((Math.random() * end) + 1);
+            if(!numberArr.includes(randomNumber)){
+                numberArr.push(randomNumber);
+            }
+        }
+
+        return numberArr;
+    }
+
+    const createArr = () => {
+        const randomNumberArr = createRandomNumberArr(startingNumber, numberOfRows * numberOfColumns);
+
+        let arr = randomNumberArr.map((value) => {
+            return {
+                number: value,
+                color: 'pink'
+            }
+        })
+
+        setDataArr(arr);
+        setBingoCounter(0);
+        createArrOfBingoCombinations([...arr]);
+        localStorage.setItem('dataArr', JSON.stringify(arr));
+        localStorage.setItem('chosenNumbersArr', JSON.stringify(chosenNumbersArr));
+        localStorage.setItem('areItemsChosen', chosenNumbersArr.length);
+        localStorage.setItem('bingoCounter', 0);
+    } 
+
+    const createArrOfBingoCombinations = (data) => {
+        let tempArr = [];
+        for(let i = 0; i < numberOfColumns * numberOfRows; i = i + 5){
+
+            let y = i;
+            let arr = [];
+            while(y < numberOfColumns + i){
+                arr.push(data[y].number);
+                y++;
+            }
+
+            tempArr.push(arr);
+        }
+
+        for(let i = 0; i < numberOfColumns; i++){
+
+            let y = i;
+            let arr = [];
+            while(y < numberOfColumns * numberOfRows){
+                arr.push(data[y].number);
+                y = y + numberOfColumns;
+            }
+
+            tempArr.push(arr);
+        }
+
+        let primaryDiagonalArr = [];
+        let secondaryDiagonalArr = [];
+        for(let i = 0; i < numberOfColumns; i++){
+            primaryDiagonalArr.push(data[i * (numberOfColumns + 1)].number);
+            secondaryDiagonalArr.push(data[(i + 1) * (numberOfColumns - 1)].number);
+        }
+        tempArr.push(primaryDiagonalArr, secondaryDiagonalArr);
+
+        setArrayOfBingoCombinations(tempArr);
+        setTotalNumberOfBingoCombinations(tempArr.length);
+        localStorage.setItem('bingoCombinations', JSON.stringify(tempArr));1
+    }
+
+    const choseNumber = (chosenNumber) => {
+        const newDataArr = dataArr.map((item) => {
+            return {
+                number: item.number,
+                color: (item.number === chosenNumber && item.color === 'pink') ? 'skyblue' : item.color
+            };
+        })
+
+        setChosenNumbersArr((prevState) => [...prevState, chosenNumber])
+
+        setDataArr(newDataArr);
+        localStorage.setItem('dataArr', JSON.stringify(newDataArr));
+    }
+
+    const newGame = () => {
+        localStorage.removeItem('dataArr');
+        localStorage.removeItem('bingoCombinations');
+        localStorage.removeItem('chosenNumbersArr');
+        localStorage.removeItem('areItemsChosen');
+        localStorage.removeItem('bingoCounter');
+
+        setChosenNumbersArr([]);
+        if(reload == 1){
+            setReload(2);
+        } else {
+            setReload(1);
+        }
+    }
+
+
+    const checkSubArr = (subArr, chosenNumbersArr) => {
+        const result = subArr.every(element => chosenNumbersArr.includes(element));
+        return result;
+    }
+
+    useEffect(() => {
+
+        if(localStorage.getItem('areItemsChosen') && localStorage.getItem('areItemsChosen') > 0){
+            setDataArr(JSON.parse(localStorage.getItem('dataArr')));
+            setArrayOfBingoCombinations(JSON.parse(localStorage.getItem('bingoCombinations')));
+            setChosenNumbersArr(JSON.parse(localStorage.getItem('chosenNumbersArr')));
+            setBingoCounter(localStorage.getItem('bingoCounter'));
+        } else {
+            createArr();
+        }
+
+        return () => {
+            localStorage.removeItem('dataArr');
+            localStorage.removeItem('bingoCombinations');
+            localStorage.removeItem('chosenNumbersArr');
+            localStorage.removeItem('areItemsChosen');
+            localStorage.removeItem('bingoCounter');
+        }
+    }, [reload]);
+
+    useEffect(() => {
+        if(firstRenderDone === true){
+            // localStorage.setItem('bingoCounter', bingoCounter);
+            if(bingoCounter === numberOfRows){
+                alert("BINGO");
+            }
+        }
+
+        if(firstRenderDone === false){
+            setFirstRenderDone(true);
+        }
+    }, [bingoCounter]);
+
+
+    useEffect(() => {
+        localStorage.setItem('chosenNumbersArr', JSON.stringify(chosenNumbersArr));
+        localStorage.setItem('areItemsChosen', chosenNumbersArr.length);
+
+        const fulfilledSubArrays =  arrayOfBingoCombinations.filter(subArr => checkSubArr(subArr, chosenNumbersArr));
+        setBingoCounter(fulfilledSubArrays.length);
+        localStorage.setItem('bingoCounter', fulfilledSubArrays.length);
+    }, [chosenNumbersArr])
+
+
+    return (
+        <div style={styles.mainDiv}>
+            <div style={styles.bingoCounterDiv.self}>
+                <div style={styles.bingoCounterDiv.bingoCounterNumber}>
+                    <span style={styles.bingoCounterDiv.bingoCounterNumber.spanElement}>{bingoCounter}</span>
+                </div>
+            </div>
+            <div style={styles.parentDiv}>
+                {dataArr.map((item) => (
+                    <div key={item.number} style={{...styles.numberDiv, backgroundColor: `${item.color}`, cursor: `${!chosenNumbersArr.includes(item.number) ? 'pointer' : ''}`}}onClick={() => {
+                        if(!chosenNumbersArr.includes(item.number) && bingoCounter < numberOfRows){
+                            choseNumber(item.number);
+                        }
+                    }}>
+                    <span>{item.number}</span>
+                </div>
+                ))}
+            </div>
+            <button style={styles.buttonElement} onClick={newGame}>New Game</button>
+        </div>
+    )
+}
+
+root.render(<App />);
