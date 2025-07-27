@@ -12,34 +12,57 @@ const HostGame = () => {
         noOfPlayers: ''
     })
 
+    const [formErrors, setFormErrors] = useState({
+        name: [],
+        gameCode: [],
+        noOfPlayers: []
+    })
+
     const handleFormValues = (e) => {
         setHostGameForm((prevState) => {return {...prevState, [e.target.name]: e.target.value} })
     }
 
     const submit = async (e) => {
         e.preventDefault();
-        // console.log('dddd')
-        // return;
-        // const token = jwt.sign({ foo: 'bar' }, 'nnjbdw909090123908^^', { algorithm: 'HS256' });
-        const token = jwt.sign({ foo: 'bar'},'hjojjhewhew', {algorithm: 'ES256'});
-        console.log(token)
-        // const host = await apiCall(hostGameUrl, hostGameForm, token);
+        // const host = await apiCall(hostGameUrl, hostGameForm);
+        // if(host){
+        //     localStorage.setItem('token', host.token);
+        // }
+        localStorage.setItem('token', 'asas');
+        localStorage.setItem('gameOngoing', 1);
+        localStorage.setItem('ongoingGamePlayerName', hostGameForm.name)
+        localStorage.setItem('ongoingGameCode', hostGameForm.gameCode)
+        window.location.reload();
     }
 
     return (
         <div>
             <form onSubmit={submit}>
-                <label htmlFor="name">Your Name</label><br/>
-                <input type="text" id="name" name="name" onInput={handleFormValues} /><br/><br/>
+                <div>
+                    <label htmlFor="name">Your Name</label><br/>
+                    <input type="text" id="name" name="name" onInput={handleFormValues} /><br/>
+                    {formErrors.name.length > 0 && (
+                        <span className="error-string">{formErrors.name[0]}</span>
+                    )}
+                </div><br/>
 
-                <label htmlFor="gameCode">Create Game Code</label><br/>
-                <input type="text" id="gameCode" name="gameCode" onInput={handleFormValues} /><br/><br/>
+                <div>
+                    <label htmlFor="gameCode">Create Game Code</label><br/>
+                    <input type="text" id="gameCode" name="gameCode" onInput={handleFormValues} /><br/>
+                    {formErrors.gameCode.length > 0 && (
+                        <span className="error-string">{formErrors.gameCode[0]}</span>
+                    )}
+                </div><br/>
 
-                <label htmlFor="noOfPlayers">Enter Number Of Players</label><br/>
-                <input type="number" id="noOfPlayers" name="noOfPlayers" onInput={handleFormValues} /><br/><br/>
+                <div>
+                    <label htmlFor="noOfPlayers">Enter Number Of Players</label><br/>
+                    <input type="number" id="noOfPlayers" name="noOfPlayers" onInput={handleFormValues} /><br/>
+                    {formErrors.noOfPlayers.length > 0 && (
+                        <span className="error-string">{formErrors.noOfPlayers[0]}</span>
+                    )}
+                </div><br/>
 
-                {/* <button type="submit">Submit</button> */}
-                <input type="submit" value="Submit" />
+                <button type="submit">Submit</button>
             </form>
         </div>
     )

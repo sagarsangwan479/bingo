@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import HostGame from "./HostGame";
 import JoinGame from "./JoinGame";
+import Board from "./Board";
 
 const styles = {
     topDiv: {
@@ -29,25 +30,58 @@ const Home = () => {
 
     const [hostButtonClick, setHostButtonClick] = useState(null);
     const [joinButtonClick, setJoinButtonClick] = useState(null);
+    const [exitButtonClick, setExitButtonClick] = useState(null);
 
     const [hostGameActive, setHostGameActive] = useState(false);
     const [joinGameActive, setJoinGameActive] = useState(false);
+
+    const [gameHostedOrJoined, setGameHostedOrJoined] = useState(false);
+
+    const handleExitButtonClick = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('gameOngoing');
+        localStorage.removeItem('ongoingGamePlayerName');
+        localStorage.removeItem('ongoingGameCode');
+        localStorage.removeItem('dataArr');
+        localStorage.removeItem('bingoCombinations');
+        localStorage.removeItem('chosenNumbersArr');
+        localStorage.removeItem('areItemsChosen');
+        localStorage.removeItem('bingoCounter');
+
+        window.location.reload();
+    }
+
+    useEffect(() => {
+        if(localStorage.getItem('gameOngoing') == 1){
+            setGameHostedOrJoined(true);
+        }
+    }, [])
 
     return (
         <div style={styles.topDiv}>
             <div style={styles.parentDiv}>
                 <div style={styles.mainDiv}>
-                    {!hostGameActive && (<p style={{...styles.mainDiv.button, border: hostButtonClick === 1 ? '' : '2px black solid'}} onMouseDown={() => { setHostButtonClick(1) }} onMouseUp={() => { setHostButtonClick(null); setHostGameActive(true); setJoinGameActive(false) }}>Host a game</p>)}
-                    {!joinGameActive && (<p style={{...styles.mainDiv.button, border: joinButtonClick === 1 ? '' : '2px black solid'}} onMouseDown={() => { setJoinButtonClick(1) }} onMouseUp={() => { setJoinButtonClick(null); setJoinGameActive(true); setHostGameActive(false) }}>Join a game</p>)}
+                    {!gameHostedOrJoined && !hostGameActive && (<p style={{...styles.mainDiv.button, border: hostButtonClick === 1 ? '' : '2px black solid'}} onMouseDown={() => { setHostButtonClick(1) }} onMouseUp={() => { setHostButtonClick(null); setHostGameActive(true); setJoinGameActive(false) }}>Host a game</p>)}
+
+                    {!gameHostedOrJoined && !joinGameActive && (<p style={{...styles.mainDiv.button, border: joinButtonClick === 1 ? '' : '2px black solid'}} onMouseDown={() => { setJoinButtonClick(1) }} onMouseUp={() => { setJoinButtonClick(null); setJoinGameActive(true); setHostGameActive(false) }}>Join a game</p>)}
+
+                    {gameHostedOrJoined && (
+                        <p style={{...styles.mainDiv.button, border: exitButtonClick === 1 ? '' : '2px black solid'}} onMouseDown={() => { setExitButtonClick(1) }}
+                        onMouseUp={() => { setExitButtonClick(null); handleExitButtonClick() }}>Exit game</p>
+                    )}
                 </div>
             </div>
 
-            {hostGameActive && (
+            {!gameHostedOrJoined && hostGameActive && (
                 <HostGame />
             )}
 
-            {joinGameActive && (
+            {!gameHostedOrJoined && joinGameActive && (
                 <JoinGame />
+            )}
+
+            {gameHostedOrJoined && (
+                <Board />
             )}
         </div>
     )

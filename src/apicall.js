@@ -1,20 +1,18 @@
 import axios from "axios";
 
 
-const apiCall = async (url, body, token) => {
+const apiCall = async (url, body) => {
     try {
-
-      console.log(url, body, token)
 
         const baseUrl = 'http://51.20.6.241/api';
 
         const config = {
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": token
+                // "Authorization": token
             }
         }
-      const response = await axios.post(baseUrl + url, body, config);
+        const response = await axios.post(baseUrl + url, body, config);
   
       return response.data;
     } catch (err) {

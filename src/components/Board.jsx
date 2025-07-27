@@ -243,7 +243,7 @@ const Board = () => {
                 </div>
                 ))}
             </div>
-            <button style={styles.buttonElement} onClick={newGame}>New Game</button>
+            {/* <button style={styles.buttonElement} onClick={newGame}>New Game</button> */}
         </div>
     )
 }
