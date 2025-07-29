@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { joinGameUrl } from '../endpoints';
+import { apiCall } from '../apicall';
 
 const JoinGame = () => {
 
@@ -18,15 +20,22 @@ const JoinGame = () => {
 
     const submit = async (e) => {
         e.preventDefault();
-        // const host = await apiCall(hostGameUrl, hostGameForm);
-        // if(host){
-        //     localStorage.setItem('token', host.token);
-        // }
-        localStorage.setItem('token', 'asas');
-        localStorage.setItem('gameOngoing', 1);
-        localStorage.setItem('ongoingGamePlayerName', joinGameForm.name)
-        localStorage.setItem('ongoingGameCode', joinGameForm.gameCode)
-        window.location.reload();
+        if(!joinGameForm.name || !joinGameForm.gameCode){
+            alert('Fill all fields');
+            return;
+        }
+        const host = await apiCall(joinGameUrl, joinGameForm);
+        if(host && host.status == 'error'){
+            alert(host.message);
+            return;
+        }
+        if(host && host.token){
+            localStorage.setItem('token', host.token);
+            localStorage.setItem('gameOngoing', 1);
+            localStorage.setItem('ongoingGamePlayerName', joinGameForm.name)
+            localStorage.setItem('ongoingGameCode', joinGameForm.gameCode)
+            window.location.reload();
+        }
     }
 
     return (

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { apiCall } from "../apicall";
-import jwt from 'jsonwebtoken';
 import { hostGameUrl } from "../endpoints";
 
 
@@ -24,15 +23,22 @@ const HostGame = () => {
 
     const submit = async (e) => {
         e.preventDefault();
-        // const host = await apiCall(hostGameUrl, hostGameForm);
-        // if(host){
-        //     localStorage.setItem('token', host.token);
-        // }
-        localStorage.setItem('token', 'asas');
-        localStorage.setItem('gameOngoing', 1);
-        localStorage.setItem('ongoingGamePlayerName', hostGameForm.name)
-        localStorage.setItem('ongoingGameCode', hostGameForm.gameCode)
-        window.location.reload();
+        if(!hostGameForm.name || !hostGameForm.gameCode || !hostGameForm.noOfPlayers){
+            alert('Fill all fields');
+            return;
+        }
+        const host = await apiCall(hostGameUrl, hostGameForm);
+        if(host && host.status == 'exists'){
+            alert(host.message);
+            return;
+        }
+        if(host && host.token){
+            localStorage.setItem('token', host.token);
+            localStorage.setItem('gameOngoing', 1);
+            localStorage.setItem('ongoingGamePlayerName', hostGameForm.name)
+            localStorage.setItem('ongoingGameCode', hostGameForm.gameCode)
+            window.location.reload();
+        }
     }
 
     return (
