@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import HostGame from "./HostGame";
 import JoinGame from "./JoinGame";
 import Board from "./Board";
+import { apiCall } from "../apicall";
+import { exitGame } from "../endpoints";
 
 const styles = {
     topDiv: {
@@ -37,7 +39,9 @@ const Home = () => {
 
     const [gameHostedOrJoined, setGameHostedOrJoined] = useState(false);
 
-    const handleExitButtonClick = () => {
+    const handleExitButtonClick = async () => {
+        const exit = await apiCall(exitGame, { gameCode: localStorage.getItem('ongoingGameCode') });
+
         localStorage.removeItem('token');
         localStorage.removeItem('gameOngoing');
         localStorage.removeItem('ongoingGamePlayerName');

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { joinGameUrl } from '../endpoints';
+import { joinGameUrl } from '../endpoints.js';
 import { apiCall } from '../apicall';
 
 const JoinGame = () => {

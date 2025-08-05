@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { apiCall } from '../apicall';
+import { saveBoardData } from '../endpoints';
 
 
 const Board = () => {
@@ -182,6 +184,18 @@ const Board = () => {
         return result;
     }
 
+    const saveData = async () => {
+        const data = {
+            dataArr: localStorage.getItem('dataArr'),
+            bingoCombinations: localStorage.getItem('bingoCombinations'),
+            chosenNumbersArr: localStorage.getItem('chosenNumbersArr'),
+            bingoCounter: localStorage.getItem('bingoCounter'),
+            areItemsChosen: localStorage.getItem('areItemsChosen'),
+            gameCode: localStorage.getItem('ongoingGameCode')
+        }
+        const save = await apiCall(saveBoardData, data);
+    }
+
     useEffect(() => {
     
         if(localStorage.getItem('areItemsChosen') && localStorage.getItem('areItemsChosen') > 0){
@@ -191,6 +205,7 @@ const Board = () => {
             setBingoCounter(localStorage.getItem('bingoCounter'));
         } else {
             createArr();
+            saveData();
         }
     
         return () => {
