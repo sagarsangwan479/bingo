@@ -203,6 +203,7 @@ const Board = () => {
             setArrayOfBingoCombinations(JSON.parse(localStorage.getItem('bingoCombinations')));
             setChosenNumbersArr(JSON.parse(localStorage.getItem('chosenNumbersArr')));
             setBingoCounter(localStorage.getItem('bingoCounter'));
+            saveData();
         } else {
             createArr();
             saveData();
@@ -238,6 +239,9 @@ const Board = () => {
         const fulfilledSubArrays =  arrayOfBingoCombinations.filter(subArr => checkSubArr(subArr, chosenNumbersArr));
         setBingoCounter(fulfilledSubArrays.length);
         localStorage.setItem('bingoCounter', fulfilledSubArrays.length);
+        if(firstRenderDone === true){
+            saveData();
+        }
     }, [chosenNumbersArr])
 
     return (
