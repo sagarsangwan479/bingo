@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { apiCall } from '../apicall';
-import { saveBoardData } from '../endpoints';
+import { ongoingGameData, saveBoardData } from '../endpoints';
 
 
 const Board = () => {
@@ -16,6 +16,10 @@ const Board = () => {
     const [bingoCounter, setBingoCounter] = useState(0);
     const [arrayOfBingoCombinations, setArrayOfBingoCombinations] = useState([]);
     const [totalNumberOfBingoCombinations, setTotalNumberOfBingoCombinations] = useState(0);
+    const [bannerMessage, setBannerMessage] = useState('wait...');
+    const [enableNumberClick, setEnableNumberClick] = useState(false);
+
+    let interval;
 
     const styles = {
         mainDiv: {
@@ -23,6 +27,11 @@ const Board = () => {
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center'
+        },
+        bannerDiv: {
+            marginLeft: 'auto',
+            marginRight: 'auto',
+            width: 'fit-content'
         },
         bingoCounterDiv: {
             self: {
@@ -194,6 +203,58 @@ const Board = () => {
             gameCode: localStorage.getItem('ongoingGameCode')
         }
         const save = await apiCall(saveBoardData, data);
+        setEnableNumberClick(false);
+    }
+
+    const getOngoingGameData = () => {
+        clearInterval(interval);
+        interval = setInterval(async () => {
+
+            const data = {
+                gameCode: localStorage.getItem('ongoingGameCode')
+            }
+            const getData = await apiCall(ongoingGameData, data);
+            
+            if(getData.status == 'ended'){
+                alert(getData.message);
+                localStorage.removeItem('token');
+                localStorage.removeItem('gameOngoing');
+                localStorage.removeItem('ongoingGamePlayerName');
+                localStorage.removeItem('ongoingGameCode');
+                localStorage.removeItem('dataArr');
+                localStorage.removeItem('bingoCombinations');
+                localStorage.removeItem('chosenNumbersArr');
+                localStorage.removeItem('areItemsChosen');
+                localStorage.removeItem('bingoCounter');
+
+                window.location.reload();
+            }
+
+            if(getData.status == 'bingo'){
+                alert(getData.message);
+                localStorage.removeItem('token');
+                localStorage.removeItem('gameOngoing');
+                localStorage.removeItem('ongoingGamePlayerName');
+                localStorage.removeItem('ongoingGameCode');
+                localStorage.removeItem('dataArr');
+                localStorage.removeItem('bingoCombinations');
+                localStorage.removeItem('chosenNumbersArr');
+                localStorage.removeItem('areItemsChosen');
+                localStorage.removeItem('bingoCounter');
+
+                window.location.reload();
+            }
+            
+            if(getData.status == 'wait'){
+                setBannerMessage(getData.message);
+            }
+            
+            if(getData.status == 'success'){
+                setEnableNumberClick(getData.data?.turn ? true : false)
+                const text = getData.data?.turn ? 'Your turn' : 'Wait for your turn';
+                setBannerMessage(text);
+            }
+        }, 5000);
     }
 
     useEffect(() => {
@@ -204,9 +265,11 @@ const Board = () => {
             setChosenNumbersArr(JSON.parse(localStorage.getItem('chosenNumbersArr')));
             setBingoCounter(localStorage.getItem('bingoCounter'));
             saveData();
+            getOngoingGameData();
         } else {
             createArr();
             saveData();
+            getOngoingGameData();
         }
     
         return () => {
@@ -215,6 +278,7 @@ const Board = () => {
             localStorage.removeItem('chosenNumbersArr');
             localStorage.removeItem('areItemsChosen');
             localStorage.removeItem('bingoCounter');
+            clearInterval(interval);
         }
     }, [reload]);
 
@@ -245,24 +309,29 @@ const Board = () => {
     }, [chosenNumbersArr])
 
     return (
-        <div style={styles.mainDiv}>
-            <div style={styles.bingoCounterDiv.self}>
-                <div style={styles.bingoCounterDiv.bingoCounterNumber}>
-                    <span style={styles.bingoCounterDiv.bingoCounterNumber.spanElement}>{bingoCounter}</span>
+        <div>
+            <div style={styles.bannerDiv}>{bannerMessage}</div>
+            <div style={styles.mainDiv}>
+                <div style={styles.bingoCounterDiv.self}>
+                    <div style={styles.bingoCounterDiv.bingoCounterNumber}>
+                        <span style={styles.bingoCounterDiv.bingoCounterNumber.spanElement}>{bingoCounter}</span>
+                    </div>
                 </div>
-            </div>
-            <div style={styles.parentDiv}>
-                {dataArr.map((item) => (
-                    <div key={item.number} style={{...styles.numberDiv, backgroundColor: `${item.color}`, cursor: `${!chosenNumbersArr.includes(item.number) ? 'pointer' : ''}`}}onClick={() => {
-                        if(!chosenNumbersArr.includes(item.number) && bingoCounter < numberOfRows){
-                            choseNumber(item.number);
-                        }
-                    }}>
-                    <span>{item.number}</span>
+                <div style={styles.parentDiv}>
+                    {dataArr.map((item) => (
+                        <div key={item.number} style={{...styles.numberDiv, backgroundColor: `${item.color}`, cursor: `${!chosenNumbersArr.includes(item.number) ? 'pointer' : ''}`}}onClick={() => {
+                            if(!chosenNumbersArr.includes(item.number) && bingoCounter < numberOfRows){
+                                if(enableNumberClick){
+                                    choseNumber(item.number);
+                                }
+                            }
+                        }}>
+                        <span>{item.number}</span>
+                    </div>
+                    ))}
                 </div>
-                ))}
+                {/* <button style={styles.buttonElement} onClick={newGame}>New Game</button> */}
             </div>
-            {/* <button style={styles.buttonElement} onClick={newGame}>New Game</button> */}
         </div>
     )
 }
